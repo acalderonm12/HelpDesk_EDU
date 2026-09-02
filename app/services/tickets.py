@@ -79,3 +79,16 @@ class TicketService:
         if ticket is None:
             raise ValueError(f"Ticket {ticket_id} was not found")
         return ticket
+
+    def list_by_technician(self, technician_id: int) -> list[Ticket]:
+        """Devuelve únicamente los tickets asignados a un técnico específico."""
+        return [ticket for ticket in self._tickets if ticket.assignee_id == technician_id]
+
+    def list_by_category(self, category: str) -> list[Ticket]:
+        """Devuelve únicamente los tickets que pertenecen a una categoría especificada."""
+        return [ticket for ticket in self._tickets if ticket.category == category]
+
+    def list_by_status(self, status: str | TicketStatus) -> list[Ticket]:
+        """Devuelve únicamente los tickets que coinciden con el estado especificado."""
+        target_status = status if isinstance(status, TicketStatus) else TicketStatus(status)
+        return [ticket for ticket in self._tickets if ticket.status == target_status]
