@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime
-
+from app.models.comments import Comment
 from app.models.enums import Role, TicketStatus
 
 @dataclass
@@ -19,3 +19,4 @@ class Ticket:
     updated_at: datetime = field(
         default_factory=lambda: datetime.now().astimezone()
     )
+    comments: list[Comment] = field(default_factory=list)
