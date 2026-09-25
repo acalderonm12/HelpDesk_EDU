@@ -83,3 +83,13 @@ class InvalidStatusTransitionError(ValidationError):
             from_status=str(from_value),
             to_status=str(to_value),
         )
+
+class DuplicateAssignmentError(DomainError):
+    """Lanzado al intentar asignar un ticket al mismo técnico que ya lo tiene."""
+
+    code = "duplicate_assignment"
+
+    def __init__(self, technician_id: int) -> None:
+        super().__init__(
+            f"El ticket ya se encuentra asignado al técnico con ID {technician_id}"
+        )

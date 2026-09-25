@@ -310,3 +310,4 @@ class TicketService:
 
     def _now(self) -> datetime:
         return datetime.now().astimezone()
+
