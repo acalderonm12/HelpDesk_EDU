@@ -8,7 +8,7 @@ from app.domain.errors import (
 from app.domain.workflow import assert_transition
 from app.models.assignments import Assignment
 from app.models.comments import Comment
-from app.models.entities import HistoryEvent, Ticket, User
+from app.models.entities import HistoryEvent, InternalNote, Ticket, User
 from app.models.enums import CATEGORIES, PRIORITIES, Role, TicketStatus
 from app.repositories.base import TicketRepository
 from app.services.notifications import Notifier, NullNotifier
@@ -27,6 +27,7 @@ class TicketService:
         self._notifier = notifier or NullNotifier()
         self._next_comment_id = 1
         self._next_event_id = 1
+        self._next_internal_note_id = 1
 
     def create(
         self,
@@ -310,3 +311,62 @@ class TicketService:
 
     def _now(self) -> datetime:
         return datetime.now().astimezone()
+
+    def add_internal_note(
+        self,
+        ticket_id: int,
+        author_id: int,
+        body: str,
+    ) -> InternalNote:
+        """Crea una nota interna privada visible únicamente para el personal de staff."""
+        ticket = self.require(ticket_id)
+        
+        # Validar que el autor sea un usuario válido y tenga permisos de staff
+        author = self._users.require(author_id)
+        if not author.is_staff:
+            raise PermissionDeniedError(
+                "Only staff users can add internal notes",
+                actor_id=author_id,
+                ticket_id=ticket_id,
+            )
+
+        if not body or not body.strip():
+            raise ValidationError("Internal note body is required", field="body")
+
+        def add_internal_note(
+            self,
+            ticket_id: int,
+            author_id: int,
+            body: str,
+        ) -> InternalNote:
+           
+            ticket = self.require(ticket_id)
+            
+        
+            author = self._users.require(author_id)
+            if not author.is_staff:
+                raise PermissionDeniedError(
+                    
+                    actor_id=author_id,
+                    ticket_id=ticket_id,
+                )
+
+            if not body or not body.strip():
+                raise ValidationError("Internal note body is required", field="body")
+
+            internal_note = InternalNote(
+                id=self._next_internal_note_id,
+                ticket_id=ticket_id,
+                author_id=author_id,
+                body=body.strip(),
+            )
+            self._next_internal_note_id += 1
+            ticket.internal_notes.append(internal_note)
+            ticket.updated_at = self._now()
+            self._record_history(
+                ticket=ticket,
+                event_type="internal_note_added",
+                actor_id=author_id,
+                detail="internal note added",
+            )
+            return internal_note
