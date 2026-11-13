@@ -51,12 +51,14 @@ class Ticket:
     assignee_id: int | None = None
     comments: list[Comment] = field(default_factory=list)
     history: list[HistoryEvent] = field(default_factory=list)
+    internal_notes: list[InternalNote] = field(default_factory=list)
     created_at: datetime = field(
         default_factory=lambda: datetime.now().astimezone()
     )
     updated_at: datetime = field(
         default_factory=lambda: datetime.now().astimezone()
     )
+    
 
     @property
     def is_open(self) -> bool:
@@ -65,3 +67,11 @@ class Ticket:
     @property
     def is_assigned(self) -> bool:
         return self.assignee_id is not None
+
+@dataclass
+class InternalNote:
+    id: int
+    ticket_id: int
+    author_id: int
+    body: str
+    created_at: datetime = field(default_factory=datetime.now)
